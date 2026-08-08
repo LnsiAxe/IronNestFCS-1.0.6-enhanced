@@ -168,6 +168,17 @@ dotnet build IronNestFCS.sln -c Release
 | [CSCore](https://github.com/filoe/cscore) | 音频解码 (mp3/wav/flac) | 仅 CustomRecords 使用，纯托管库 |
 | [TagLibSharp](https://github.com/mono/taglib-sharp) | 音频标签/封面读取 | 仅 CustomRecords 使用，纯托管库 |
 
+## 兼容性与安装要求
+
+> ⚠️ **重要**：本增强版**仅支持正式版游戏（`Iron Nest Heavy Turret Simulator`）**，**不支持 Demo 版**。
+> Demo 版的游戏程序集与正式版不同，本 Mod 的 dll 基于正式版编译，在 Demo 版上会加载失败（安装后无反应）。
+
+1. **必须已安装 [MelonLoader](https://melonwiki.xyz/)**（IL2CPP / net6 版）。没装 MelonLoader 的话，dll 放进游戏目录不会被执行。
+2. **首次启动**需联网让 MelonLoader 生成 `MelonLoader/Il2CppAssemblies/`（网络不通会卡住），生成成功后在游戏根目录可见该文件夹。
+3. 按发布包结构放置（见上文"构建与安装"），三个位置缺一不可：`Mods/`、`UserData/IronNestFCS/`、`UserLibs/`。
+4. 启动后先进主菜单属正常（面板显示 `Waiting for scene...`），**进入炮塔关卡场景后**会自动绑定；若未绑定按 **F9**。
+5. 排查问题优先看 `MelonLoader/Latest.log`：日志里有 `IronNestFCS` 字样说明 Mod 已加载，报错内容一眼可见。
+
 ## 使用
 
 1. 启动已安装 MelonLoader 与本 Mod 的游戏。
