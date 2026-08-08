@@ -1,0 +1,81 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <PlatformTarget>x64</PlatformTarget>
+        <NoWarn>NU1701</NoWarn>
+        <GameDir>F:\SteamLibrary\steamapps\common\Iron Nest Heavy Turret Simulator</GameDir>
+        <!-- 独立的 MelonMod，放进 Mods/ 由 MelonLoader 自动加载（无需热重载）。 -->
+        <OutputPath>$(GameDir)\Mods\</OutputPath>
+        <PackageId>IronNestFCS.CustomRecords</PackageId>
+        <RootNamespace>IronNestFCS.CustomRecords</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="..\Shared\NullablePolyfill.cs" Link="NullablePolyfill.cs" />
+    </ItemGroup>
+
+    <!-- 第三方纯托管库：音频解码(CSCore) 与标签/封面读取(TagLibSharp)。
+         它们不触碰 Unity/IL2CPP API，只在托管侧解析文件字节，故不受 IL2CPP 裁剪影响。
+         CSCore 自带 mp3/wav/flac 解码，避免 NAudio + NAudio.Flac 的版本冲突
+        （NAudio.Flac 仅兼容 NAudio 1.7.3，与 NAudio 2.x 的 WaveStream 类型冲突）。
+         GeneratePathProperty 让我们能在下面的 target 里按包路径精确拷贝它们的 dll。 -->
+    <ItemGroup>
+        <PackageReference Include="CSCore" Version="1.2.1.2" GeneratePathProperty="true" />
+        <PackageReference Include="TagLibSharp" Version="2.3.0" GeneratePathProperty="true" />
+    </ItemGroup>
+
+    <!-- 全部 Private=false：运行时由进程提供，不复制 -->
+    <ItemGroup>
+        <Reference Include="MelonLoader">
+            <HintPath>$(GameDir)\MelonLoader\net6\MelonLoader.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Il2CppInterop.Runtime">
+            <HintPath>$(GameDir)\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Assembly-CSharp">
+            <HintPath>$(GameDir)\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Il2Cppmscorlib">
+            <HintPath>$(GameDir)\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+            <HintPath>$(GameDir)\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.AudioModule">
+            <HintPath>$(GameDir)\MelonLoader\Il2CppAssemblies\UnityEngine.AudioModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.ImageConversionModule">
+            <HintPath>$(GameDir)\MelonLoader\Il2CppAssemblies\UnityEngine.ImageConversionModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
+    <!-- 依赖 dll 必须进 UserLibs/ 而不是 Mods/：MelonLoader 会把 Mods/ 里的每个 dll
+         都当成 MelonMod 去加载，第三方库没有 MelonInfo 会报错/告警。UserLibs/ 是 ML
+         的程序集解析搜索路径，放这里既能被 mod 引用又不会被误当 mod。
+         默认 build 会把 PackageReference 的 dll 复制到 OutputPath(=Mods/)，
+         这里 build 后把它们移到 UserLibs/ 并清理 Mods/ 下的残留。 -->
+    <Target Name="CopyDepsToUserLibs" AfterTargets="Build">
+        <ItemGroup>
+            <_DepDll Include="$(PkgCSCore)\lib\net35-client\CSCore.dll" />
+            <_DepDll Include="$(PkgTagLibSharp)\lib\netstandard2.0\TagLibSharp.dll" />
+        </ItemGroup>
+        <Copy SourceFiles="@(_DepDll)"
+              DestinationFolder="$(GameDir)\UserLibs"
+              SkipUnchangedFiles="true" />
+        <!-- 清理可能被默认拷贝逻辑放进 Mods/ 的同名依赖 dll，避免被当 mod 加载。 -->
+        <Delete Files="@(_DepDll->'$(OutputPath)%(Filename)%(Extension)')" />
+    </Target>
+
+</Project>

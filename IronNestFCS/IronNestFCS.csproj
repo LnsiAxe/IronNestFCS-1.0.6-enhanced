@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>IronNestFCS</AssemblyName>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <PlatformTarget>x64</PlatformTarget>
+        <!-- 游戏目录根，集中管理所有 HintPath -->
+        <GameDir>F:\SteamLibrary\steamapps\common\Iron Nest Heavy Turret Simulator</GameDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="..\Shared\NullablePolyfill.cs" Link="NullablePolyfill.cs" />
+    </ItemGroup>
+
+    <!-- 共享接口：必须只加载一份，所以这里也设为不复制（运行时从 UserLibs 提供）。
+         Host 在编译期需要它来引用 IFcsModule。 -->
+    <ItemGroup>
+        <ProjectReference Include="..\IronNestFCS.Abstractions\IronNestFCS.Abstractions.csproj">
+            <Private>false</Private>
+        </ProjectReference>
+    </ItemGroup>
+
+    <!-- MelonLoader + Il2CppInterop + Harmony。全部 Private=false：运行时由 MelonLoader 进程提供，
+         绝不能复制进 Mods/，否则与进程内已加载版本冲突。 -->
+    <ItemGroup>
+        <Reference Include="MelonLoader">
+            <HintPath>$(GameDir)\MelonLoader\net6\MelonLoader.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Il2CppInterop.Runtime">
+            <HintPath>$(GameDir)\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="0Harmony">
+            <HintPath>$(GameDir)\MelonLoader\net6\0Harmony.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Il2Cppmscorlib">
+            <HintPath>$(GameDir)\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+            <HintPath>$(GameDir)\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.IMGUIModule">
+            <HintPath>$(GameDir)\MelonLoader\Il2CppAssemblies\UnityEngine.IMGUIModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.InputLegacyModule">
+            <HintPath>$(GameDir)\MelonLoader\Il2CppAssemblies\UnityEngine.InputLegacyModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Unity.InputSystem">
+            <HintPath>$(GameDir)\MelonLoader\Il2CppAssemblies\Unity.InputSystem.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
+</Project>

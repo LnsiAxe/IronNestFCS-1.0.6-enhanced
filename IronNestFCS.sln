@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+#
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronNestFCS", "IronNestFCS\IronNestFCS.csproj", "{1EF9C3D1-4510-44B6-9611-3E60BA430F38}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronNestFCS.Abstractions", "IronNestFCS.Abstractions\IronNestFCS.Abstractions.csproj", "{4EBA9D55-99E6-458D-B069-163091555FD0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronNestFCS.Logic", "IronNestFCS.Logic\IronNestFCS.Logic.csproj", "{029CEB7C-2D51-494B-8994-CD12CAE74897}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronNestFCS.CustomRecords", "IronNestFCS.CustomRecords\IronNestFCS.CustomRecords.csproj", "{E51E3B66-F2D8-42CD-BA63-9E56607E43C1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1EF9C3D1-4510-44B6-9611-3E60BA430F38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EF9C3D1-4510-44B6-9611-3E60BA430F38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EF9C3D1-4510-44B6-9611-3E60BA430F38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EF9C3D1-4510-44B6-9611-3E60BA430F38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EBA9D55-99E6-458D-B069-163091555FD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EBA9D55-99E6-458D-B069-163091555FD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EBA9D55-99E6-458D-B069-163091555FD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EBA9D55-99E6-458D-B069-163091555FD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{029CEB7C-2D51-494B-8994-CD12CAE74897}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{029CEB7C-2D51-494B-8994-CD12CAE74897}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{029CEB7C-2D51-494B-8994-CD12CAE74897}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{029CEB7C-2D51-494B-8994-CD12CAE74897}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E51E3B66-F2D8-42CD-BA63-9E56607E43C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E51E3B66-F2D8-42CD-BA63-9E56607E43C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E51E3B66-F2D8-42CD-BA63-9E56607E43C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E51E3B66-F2D8-42CD-BA63-9E56607E43C1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
