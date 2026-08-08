@@ -208,6 +208,8 @@ dotnet build IronNestFCS.sln -c Release
 | 笔记本按键无反应 | 无小键盘 | 用 `Ctrl+数字键` 替代（见快捷键表） |
 | 构建刷 `NU1701` 警告 | CSCore 框架版本不匹配 | 在 `CustomRecords.csproj` 添加 `<NoWarn>NU1701</NoWarn>` |
 | 炮管卡 `WaitLoading` | 推药杆握持太短未推入 | 已修复（1.5s 长握持），更新到最新版 |
+| 启动报 `Win32Exception (193)` 且提示 `Cpp2IL.exe` | MelonLoader 首次生成 IL2CPP 程序集时下载 Cpp2IL 中断，留下残缺文件 | 从可用的同版本 MelonLoader 复制完整 `Cpp2IL.exe`（约 14.4MB）到 `MelonLoader\Dependencies\Il2CppAssemblyGenerator\Cpp2IL\`，或保证网络通畅后删除残件让 MelonLoader 重新下载 |
+| 安装后无反应 / 面板不出现 | 见上方"兼容性与安装要求"（游戏版本、MelonLoader、首次生成、部署位置、是否进关卡） | 查看 `MelonLoader\Latest.log` 定位 |
 
 ## 贡献
 
