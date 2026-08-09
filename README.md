@@ -1,4 +1,4 @@
-# IronNestFCS Enhanced Edition (1.0.6)
+# IronNestFCS Enhanced Edition (1.0.6.1)
 
 > **基于 [svr2kos2/IronNestFCS](https://github.com/svr2kos2/IronNestFCS) v1.0.6 的增强修改版，支持正式版游戏**
 >
@@ -8,6 +8,11 @@
 > 保留 v1.0.6 独有的能力：**20 种弹种枚举**、采购卡动态解析（字典式）、弹种按钮网格布局、炮塔字段私有封装。
 >
 > 原作者：[svr2kos2](https://github.com/svr2kos2) · 1.0.8 增强版作者：[gxpppp](https://github.com/gxpppp) · MIT License
+
+## 📦 最新发布
+
+- **v1.0.6.1**(2026-08-09):修复正式版炮塔慢速瞄准被 20 秒超时机制误杀的问题
+- **下载与更新日志**:[GitHub Release v1.0.6.1](https://github.com/LnsiAxe/IronNestFCS-1.0.6-enhanced/releases/tag/v1.0.6.1)(详细改动说明见 Release 页面)
 
 [Demo Video](https://www.bilibili.com/video/BV1xc7F6WEET/)
 
