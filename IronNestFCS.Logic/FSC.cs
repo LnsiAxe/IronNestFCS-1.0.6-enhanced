@@ -119,7 +119,7 @@ public class FSC
         _sceneInteractor.FireAtWorldPosFront(id, worldPos);
     }
     
-    /// <summary>强制重置指定炮管：停协程、放锁、已中止任务放回队首重试。</summary>
+    /// <summary>强制重置指定炮管：停协程、放锁、已中止任务放回队首重试（最多重试一次，防死循环）。</summary>
     public void AbortGun(LeftRight gun) {
         MelonLogger.Msg($"[FCS] AbortGun {gun}");
         // 保存被中止的任务，稍后重新入队
@@ -137,10 +137,18 @@ public class FSC
         // 清空槽位
         if (gun == LeftRight.Left) LeftTask = null;
         else RightTask = null;
-        // 被中止的任务放回队首
+        // 被中止的任务：已重试过则标记失败，不再放回队首（避免反复采购/反复解算的无限循环）
         if (abortedTask != null) {
-            EnqueueTaskFront(abortedTask);
-        } else {
+            if (abortedTask.abortCount >= 1) {
+                abortedTask.progress = Progress.Failed;
+                MelonLogger.Error($"[FCS] {gun} 任务 T{abortedTask.targetId} 已中止过，标记 Failed，不再重试。");
+            }
+            else {
+                abortedTask.abortCount++;
+                EnqueueTaskFront(abortedTask);
+            }
+        }
+        else {
             TryDispatch();
         }
     }
@@ -152,20 +160,43 @@ public class FSC
         else { _rightProgressTime = now; _lastRightProgress = p; }
     }
 
-    /// <summary>监控协程：某炮管卡在同一状态超 20 秒则自动重置</summary>
+    /// <summary>
+    /// 该进度状态是否应该受固定超时约束。
+    ///  - 炮管物理运动阶段（Aiming / BackToIdle）：由 SetElevation 内部的无进展检测兜底，不做固定超时（慢速瞄准可等任意久）。
+    ///  - WaitingForFire 且未开启 AutoFire：等待玩家手动击发，预期可长时间挂起，不做固定超时。
+    ///  - 其余阶段（解算/装填/击发确认等）理论上数秒内完成，保留固定超时兜底。
+    /// </summary>
+    private bool ShouldTimeout(Progress p, bool autoFire) {
+        if (p == Progress.Aiming || p == Progress.BackToIdle) return false;
+        if (p == Progress.WaitingForFire && !autoFire) return false;
+        return true;
+    }
+
+    /// <summary>监控协程：非豁免阶段卡在同一状态超 20 秒则自动重置（豁免阶段由各自的进展检测兜底）。</summary>
     private IEnumerator ProgressTimeoutMonitor() {
         while (true) {
             yield return new WaitForSeconds(2f);
             var now = Time.time;
             if (LeftTask != null && _leftProgressTime > 0 && now - _leftProgressTime > ProgressTimeout) {
-                MelonLogger.Msg($"[FCS] Timeout {_lastLeftProgress}, auto-abort Left");
-                AbortGun(LeftRight.Left);
-                _leftProgressTime = 0;
+                if (ShouldTimeout(_lastLeftProgress, _sceneInteractor.AutoFire)) {
+                    MelonLogger.Msg($"[FCS] Timeout {_lastLeftProgress}, auto-abort Left");
+                    AbortGun(LeftRight.Left);
+                    _leftProgressTime = 0;
+                }
+                else {
+                    // 豁免阶段：刷新时间戳，避免状态切换瞬间被误判超时
+                    _leftProgressTime = now;
+                }
             }
             if (RightTask != null && _rightProgressTime > 0 && now - _rightProgressTime > ProgressTimeout) {
-                MelonLogger.Msg($"[FCS] Timeout {_lastRightProgress}, auto-abort Right");
-                AbortGun(LeftRight.Right);
-                _rightProgressTime = 0;
+                if (ShouldTimeout(_lastRightProgress, _sceneInteractor.AutoFire)) {
+                    MelonLogger.Msg($"[FCS] Timeout {_lastRightProgress}, auto-abort Right");
+                    AbortGun(LeftRight.Right);
+                    _rightProgressTime = 0;
+                }
+                else {
+                    _rightProgressTime = now;
+                }
             }
         }
     }

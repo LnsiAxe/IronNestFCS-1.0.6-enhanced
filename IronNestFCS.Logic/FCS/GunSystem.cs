@@ -102,9 +102,28 @@ public class GunSystem {
         }
         elevationLever.SetSliderValue(elevation);
         yield return new WaitForSeconds(0.1f);
+        // 无进展检测:慢速瞄准(仰角一直在动)可以等任意久;只有连续一段时间
+        // 仰角几乎无变化(判定卡死)才放弃,避免无限等待与后续超时误杀。
+        var lastElevation = gunController.CurrentElevation;
+        var stagnantFor = 0f;
+        const float stagnationThreshold = 10f; // 秒
+        const float progressEpsilon = 0.2f;    // 度
         while (!Mathf.Approximately(gunController.CurrentElevation, elevation)) {
             elevationLever.SetSliderValue(elevation);
             yield return new WaitForSeconds(1f);
+            var current = gunController.CurrentElevation;
+            if (Mathf.Abs(current - lastElevation) < progressEpsilon) {
+                stagnantFor += 1f;
+                if (stagnantFor >= stagnationThreshold) {
+                    MelonLogger.Error($"[FCS] GunSystem {_surfix}: 升仰角无进展 {stagnantFor:F0}s，" +
+                                      $"当前 {current:F2}° 目标 {elevation:F2}°，放弃本次瞄准。");
+                    yield break;
+                }
+            }
+            else {
+                stagnantFor = 0f;
+            }
+            lastElevation = current;
         }
     }
     

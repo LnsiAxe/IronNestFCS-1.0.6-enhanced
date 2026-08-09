@@ -24,4 +24,6 @@ public class ArtilleryTask {
     public Vector3 position;
     public BulletType bulletType;
     public Progress progress;
+    /// <summary>被 AbortGun 放回队首重试的次数，防止失败任务无限循环（每次重试都会重新采购/重新解算）。</summary>
+    public int abortCount;
 }
