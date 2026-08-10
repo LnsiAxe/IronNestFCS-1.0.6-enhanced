@@ -1,4 +1,4 @@
-# IronNestFCS Enhanced Edition (1.0.6.1)
+# IronNestFCS Enhanced Edition (1.0.6.2)
 
 > **基于 [svr2kos2/IronNestFCS](https://github.com/svr2kos2/IronNestFCS) v1.0.6 的增强修改版，支持正式版游戏**
 >
@@ -11,8 +11,8 @@
 
 ## 📦 最新发布
 
-- **v1.0.6.1**(2026-08-09):修复正式版炮塔慢速瞄准被 20 秒超时机制误杀的问题
-- **下载与更新日志**:[GitHub Release v1.0.6.1](https://github.com/LnsiAxe/IronNestFCS-1.0.6-enhanced/releases/tag/v1.0.6.1)(详细改动说明见 Release 页面)
+- **v1.0.6.2**(2026-08-10):适配游戏 8/10 更新;修复铁巢紧急转移后打击失准;自动锁敌排除 Phantom Battery 与 EnemyKillTokens
+- **下载与更新日志**:[GitHub Release v1.0.6.2](https://github.com/LnsiAxe/IronNestFCS-1.0.6-enhanced/releases/tag/v1.0.6.2)(详细改动说明见 Release 页面)
 
 [Demo Video](https://www.bilibili.com/video/BV1xc7F6WEET/)
 
