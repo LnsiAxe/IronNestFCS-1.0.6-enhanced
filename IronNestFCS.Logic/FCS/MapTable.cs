@@ -65,8 +65,8 @@ public class MapTable {
     public void ResetMarker(int index)
     {
         if (!artilleries.TryGetValue(index, out var marker)) return;
-        if (turret == null) return;
-        marker.localPosition = turret.localPosition;
+        if (turret == null || mapSurface == null) return;
+        marker.localPosition = mapSurface.InverseTransformPoint(turret.position);
     }
 
     /// <summary>按公里坐标设置第 index 号标记（KM 系 → 地图局部系，比例 3.8164）。</summary>
@@ -90,12 +90,20 @@ public class MapTable {
             return null;
         }
 
+        if (mapSurface == null) {
+            MelonLogger.Error("[FCS] GetMarkTarget: map surface unbound");
+            return null;
+        }
+
         if (index > artilleries.Count) {
             MelonLogger.Error($"[FCS] GetMarkTarget: index {index} out of range, artillery count: {artilleries.Count}");
             return null;
         }
 
-        var target = artilleries[index].localPosition - turret.localPosition;
+        // 炮塔世界坐标 → 地图局部坐标,与标记处于同一坐标系后再相减,
+        // 铁巢紧急转移后炮塔移动也能得到正确的相对偏移(旧实现直接减 turret.localPosition,坐标系不同,转移后失准)。
+        var turretLocalOnMap = mapSurface.InverseTransformPoint(turret.position);
+        var target = artilleries[index].localPosition - turretLocalOnMap;
         var dist = target.magnitude * 3.8164f;
         var angle = Vector3.SignedAngle(target, Vector3.up, Vector3.forward);
         if (angle < 0) angle += 360;

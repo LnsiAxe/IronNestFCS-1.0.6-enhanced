@@ -159,7 +159,9 @@ public class FcsSceneInteractor {
         var mapSurface = GameObject.Find("Draggable Surface")?.transform;
         if (mapSurface == null) return;
         var localPos = mapSurface.InverseTransformPoint(worldPos);
-        var target = localPos - turret.localPosition;
+        // 炮塔世界坐标 → 地图局部坐标,统一坐标系后再相减(铁巢转移后依然正确)
+        var turretLocalOnMap = mapSurface.InverseTransformPoint(turret.position);
+        var target = localPos - turretLocalOnMap;
         var dist = target.magnitude * 3.8164f;
         var angle = Vector3.SignedAngle(target, Vector3.up, Vector3.forward);
         if (angle < 0) angle += 360;
@@ -181,7 +183,9 @@ public class FcsSceneInteractor {
         var mapSurface = GameObject.Find("Draggable Surface")?.transform;
         if (mapSurface == null) return;
         var localPos = mapSurface.InverseTransformPoint(worldPos);
-        var target = localPos - turret.localPosition;
+        // 炮塔世界坐标 → 地图局部坐标,统一坐标系后再相减(铁巢转移后依然正确)
+        var turretLocalOnMap = mapSurface.InverseTransformPoint(turret.position);
+        var target = localPos - turretLocalOnMap;
         var dist = target.magnitude * 3.8164f;
         var angle = Vector3.SignedAngle(target, Vector3.up, Vector3.forward);
         if (angle < 0) angle += 360;
