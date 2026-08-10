@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 
 [assembly: MelonInfo(typeof(IronNestFCS.CustomRecords.CustomRecordsMod), 
     "IronNestFCS.CustomRecords", "1.0.0", "svr2kos2")]
-[assembly: MelonGame("Iron Nest", "Iron Nest: Heavy Turret Simulator")]
+[assembly: MelonGame("Iron Nest", "Iron Nest Heavy Turret Simulator")]
 
 namespace IronNestFCS.CustomRecords;
 
