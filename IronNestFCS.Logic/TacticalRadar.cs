@@ -84,6 +84,7 @@ public class TacticalRadar
                 var entityInfo = GetEntityInfo(loc);
                 Log($"[Radar] Entity: {child.name}  hostile={hostile}  alive={isAlive}  icon={entityInfo.icon}  role={entityInfo.role}  roleNum={entityInfo.roleNum}");
                 if (!hostile) continue;
+                if (IsExcludedUnit(child.name)) continue;
                 units.Add(new UnitEntry
                 {
                     Name = child.name,
@@ -105,6 +106,7 @@ public class TacticalRadar
             {
                 var loc = obj.GetComponent<EntityLocation>();
                 if (loc != null) { if (!IsHostile(loc, obj.transform)) continue; }
+                if (IsExcludedUnit(n)) continue;
                 if (!units.Exists(u => u.Location == loc))
                 {
                     nameMatchCount++;
@@ -501,6 +503,20 @@ public class TacticalRadar
 
         Log($"[Radar] {name} -> hostile (no match, assuming hostile)");
         return true;
+    }
+
+    /// <summary>
+    /// 排除不应被自动锁定的目标：Phantom Battery（演示/幻影炮组）与 EnemyKillTokens（击杀令牌 UI 元素）。
+    /// </summary>
+    private static bool IsExcludedUnit(string name)
+    {
+        var n = (name ?? "").ToLower();
+        if (n.Contains("enemykilltokens") || n.Contains("phantom") || n.Contains("killtokens"))
+        {
+            Log($"[Radar] Excluded from auto-targeting: {name}");
+            return true;
+        }
+        return false;
     }
 }
 
