@@ -18,7 +18,7 @@ namespace IronNestFCS;
 public class FcsHostMod : MelonMod
 {
     // 游戏启用了新 Input System，旧的 UnityEngine.Input 会直接抛异常，
-    // 因此通过 Keyboard.current 读取 F9。
+    // 因此通过 Keyboard.current 读取热重载键（默认 F9，可在 config.ini 里改 Key_Reload）。
     private const string ReloadKeyName = "F9";
 
     // Logic 程序集放在 UserData 下、而非 Mods/，避免被 MelonLoader 当作 mod 自动加载。
@@ -40,11 +40,28 @@ public class FcsHostMod : MelonMod
         reloader.Reload();
     }
 
-    /// <summary>用新 Input System 读 F9，避免触碰会抛异常的 UnityEngine.Input。</summary>
+    /// <summary>从 config.ini(MelonPreferences 分类 IronNestFCS)读取热重载键名。</summary>
+    private static string GetReloadKeyName()
+    {
+        try
+        {
+            var cat = MelonPreferences.GetCategory("IronNestFCS");
+            var entry = cat?.GetEntry<string>("Key_Reload");
+            if (entry != null && !string.IsNullOrWhiteSpace(entry.Value))
+                return entry.Value;
+        }
+        catch { /* 配置未生成/读取失败时用默认 */ }
+        return ReloadKeyName;
+    }
+
+    /// <summary>用新 Input System 读热重载键，避免触碰会抛异常的 UnityEngine.Input。</summary>
     private static bool ReloadKeyPressed()
     {
         Keyboard? kb = Keyboard.current;
-        return kb != null && kb.f9Key.wasPressedThisFrame;
+        if (kb == null) return false;
+        var name = GetReloadKeyName();
+        if (!System.Enum.TryParse<Key>(name, out var key)) return false;
+        return kb[key].wasPressedThisFrame;
     }
 
     public override void OnSceneWasLoaded(int buildIndex, string sceneName)

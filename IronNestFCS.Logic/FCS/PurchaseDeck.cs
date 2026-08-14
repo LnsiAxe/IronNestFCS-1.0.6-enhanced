@@ -59,13 +59,23 @@ public class PurchaseDeck {
         yield return new WaitForSeconds(2f);
     }
 
-    public IEnumerator BuyPowders() {
+    public IEnumerator BuyPowders(LeftRight leftRight) {
         if (_powderCard == null) {
             MelonLogger.Error("[FCS] BuyPowders: Can't find PowderCharges card");
             yield break;
         }
         _powderCard.position = new Vector3(6.4814f, -2.4675f, -22.0968f);
         _powderCard.GetComponent<DraggableItem>().MoveToSlot();
+        // 与 BuyShell 一致：先设拨盘选择目标炮管，否则药包会送到拨盘遗留值指向的炮管，
+        // 与 BuyShell 连续采购时互相冲突（药包送错管 → 目标炮管装药不足 → 装填卡住）。
+        switch (leftRight) {
+            case LeftRight.Left:
+                GetLeftRightDial().SetDialValue(0);
+                break;
+            case LeftRight.Right:
+                GetLeftRightDial().SetDialValue(1);
+                break;
+        }
         // 与 BuyShell 一致：等卡牌入槽稳定后再点购买，避免点击早于入槽导致本次采购无效。
         yield return new WaitForSeconds(0.5f);
         yield return FcsSceneInteractor.WaitAndClick(_buyButton);

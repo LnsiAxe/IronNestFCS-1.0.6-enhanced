@@ -27,8 +27,13 @@ public class FcsModule : IFcsModule
 
     public bool Initialize()
     {
+        FcsConfig.Init();
         window = new FcsWindow(fcs);
         radar = new TacticalRadar(fcs);
+        // 应用 config.ini 里的默认状态
+        radar.AutoPlaceMarkers = FcsConfig.AutoMarkersDefault.Value;
+        autoSweep = FcsConfig.AutoSweepDefault.Value;
+        if (autoSweep) radar.AutoPlaceMarkers = true; // 扫荡强制自动标点(与原快捷键行为一致)
         bool bound = fcs.TryBind();
         return bound;
     }
@@ -63,7 +68,7 @@ public class FcsModule : IFcsModule
 
         bool ctrl = kb.ctrlKey.isPressed;
 
-        if (kb.numpad0Key.wasPressedThisFrame || (ctrl && kb.digit0Key.wasPressedThisFrame))
+        if (KeyDown(kb, FcsConfig.KeySweep.Value) || (ctrl && kb.digit0Key.wasPressedThisFrame))
         {
             autoSweep = !autoSweep;
             if (autoSweep)
@@ -73,20 +78,28 @@ public class FcsModule : IFcsModule
             }
             return;
         }
-        if (kb.numpad5Key.wasPressedThisFrame || (ctrl && kb.digit5Key.wasPressedThisFrame))
+        if (KeyDown(kb, FcsConfig.KeyMarker.Value) || (ctrl && kb.digit5Key.wasPressedThisFrame))
         {
             if (radar != null) radar.AutoPlaceMarkers = !radar.AutoPlaceMarkers;
             return;
         }
-        if (kb.numpadMinusKey.wasPressedThisFrame) { AdjustAllValves(0f); return; }
-        if (kb.numpadPlusKey.wasPressedThisFrame) { AdjustAllValves(999f); return; }
-        if (kb.numpad7Key.wasPressedThisFrame || (ctrl && kb.digit7Key.wasPressedThisFrame)) { fcs.AbortGun(LeftRight.Left); return; }
-        if (kb.numpad8Key.wasPressedThisFrame || (ctrl && kb.digit8Key.wasPressedThisFrame)) { fcs.AbortGun(LeftRight.Right); return; }
-        if (kb.numpad9Key.wasPressedThisFrame || (ctrl && kb.digit9Key.wasPressedThisFrame)) { fcs.AbortGun(LeftRight.Left); fcs.AbortGun(LeftRight.Right); return; }
-        if (kb.numpad1Key.wasPressedThisFrame || (ctrl && kb.digit1Key.wasPressedThisFrame)) fcs.FireTarget(1);
-        else if (kb.numpad2Key.wasPressedThisFrame || (ctrl && kb.digit2Key.wasPressedThisFrame)) fcs.FireTarget(2);
-        else if (kb.numpad3Key.wasPressedThisFrame || (ctrl && kb.digit3Key.wasPressedThisFrame)) fcs.FireTarget(3);
-        else if (kb.numpad4Key.wasPressedThisFrame || (ctrl && kb.digit4Key.wasPressedThisFrame)) fcs.FireTarget(4);
+        if (KeyDown(kb, FcsConfig.KeyValveOff.Value)) { AdjustAllValves(0f); return; }
+        if (KeyDown(kb, FcsConfig.KeyValveOn.Value)) { AdjustAllValves(999f); return; }
+        if (KeyDown(kb, FcsConfig.KeyAbortLeft.Value) || (ctrl && kb.digit7Key.wasPressedThisFrame)) { fcs.AbortGun(LeftRight.Left); return; }
+        if (KeyDown(kb, FcsConfig.KeyAbortRight.Value) || (ctrl && kb.digit8Key.wasPressedThisFrame)) { fcs.AbortGun(LeftRight.Right); return; }
+        if (KeyDown(kb, FcsConfig.KeyAbortBoth.Value) || (ctrl && kb.digit9Key.wasPressedThisFrame)) { fcs.AbortGun(LeftRight.Left); fcs.AbortGun(LeftRight.Right); return; }
+        if (KeyDown(kb, FcsConfig.KeyFire1.Value) || (ctrl && kb.digit1Key.wasPressedThisFrame)) fcs.FireTarget(1);
+        else if (KeyDown(kb, FcsConfig.KeyFire2.Value) || (ctrl && kb.digit2Key.wasPressedThisFrame)) fcs.FireTarget(2);
+        else if (KeyDown(kb, FcsConfig.KeyFire3.Value) || (ctrl && kb.digit3Key.wasPressedThisFrame)) fcs.FireTarget(3);
+        else if (KeyDown(kb, FcsConfig.KeyFire4.Value) || (ctrl && kb.digit4Key.wasPressedThisFrame)) fcs.FireTarget(4);
+    }
+
+    /// <summary>按配置的键名检测"本帧按下"(键名来自 UnityEngine.InputSystem.Key 枚举)。</summary>
+    private static bool KeyDown(Keyboard kb, string keyName)
+    {
+        if (string.IsNullOrWhiteSpace(keyName)) return false;
+        if (!System.Enum.TryParse<Key>(keyName, out var key)) return false;
+        return kb[key].wasPressedThisFrame;
     }
 
     /// <summary>NumpadPlus/Minus: 控制所有蒸汽阀门开/关</summary>

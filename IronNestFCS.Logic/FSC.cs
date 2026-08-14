@@ -331,7 +331,7 @@ public class FSC
             // 加购买次数上限兜底：采购始终无效时不至于无限循环（每次约 2.5s）。
             var powderPurchaseAttempts = 0;
             while (gunSys.RemainingCharges() < powderCount) {
-                yield return _purchaseDeck.BuyPowders();
+                yield return _purchaseDeck.BuyPowders(leftRight);
                 if (++powderPurchaseAttempts >= 10) {
                     MelonLogger.Error(
                         $"[FCS] {leftRight} 炮管：购买装药 {powderPurchaseAttempts} 次后仍不足 " +

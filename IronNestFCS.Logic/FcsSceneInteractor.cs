@@ -30,6 +30,9 @@ public class FcsSceneInteractor {
     }
 
     public void Initialize() {
+        // 从 config.ini(MelonPreferences)读取默认状态,按钮创建时颜色同步
+        AutoFire = FcsConfig.AutoFireDefault.Value;
+        maxCharge = FcsConfig.MaxChargeDefault.Value;
         InitializeBulletTypeButtons();
         InitializeTargetButtons();
     }

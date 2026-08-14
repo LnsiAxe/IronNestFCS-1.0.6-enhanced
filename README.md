@@ -198,6 +198,31 @@ dotnet build IronNestFCS.sln -c Release
 8. 右上角雷达显示存活/已摧毁目标及当前标点模式。
 9. 炮管卡住时按 `Numpad 7/8/9` 强制重置——被中止的任务会放回队首重试。
 
+## 配置（config.ini）
+
+首次运行后生成 `游戏根目录/UserData/MelonPreferences.cfg`，可直接编辑（保存后重启游戏或按 F9 生效）：
+
+```ini
+[IronNestFCS]
+Key_SweepToggle = "Numpad0"      ; 持续扫荡开关
+Key_MarkerToggle = "Numpad5"     ; 自动标点切换
+Key_ValveOff = "NumpadMinus"     ; 关闭全部阀门
+Key_ValveOn = "NumpadPlus"       ; 打开全部阀门
+Key_AbortLeft = "Numpad7"        ; 重置左炮
+Key_AbortRight = "Numpad8"       ; 重置右炮
+Key_AbortBoth = "Numpad9"        ; 重置双炮
+Key_FireTarget1 = "Numpad1"      ; 打击目标 1（2/3/4 同理）
+Key_Reload = "F9"                ; 热重载火控逻辑
+AutoFire_Default = true          ; 进关卡后默认开启自动开火
+AutoMarkers_Default = true       ; 进关卡后默认开启自动标点
+AutoSweep_Default = false        ; 进关卡后默认开启持续扫荡
+MaxCharge_Default = false        ; 进关卡后默认开启最大装药
+```
+
+- 键名使用 `UnityEngine.InputSystem.Key` 枚举（如 `F1`、`Numpad0`、`Space`、`LeftShift`、`E`）
+- `Ctrl+数字键` 始终保留为备用快捷键（无键盘用户）
+- 无键盘的笔记本用户可把键位改成常用键（如 `F1`~`F8`）
+
 ### 开发热重载
 
 修改 `IronNestFCS.Logic` 内的代码后，重新构建该项目（dll 会直接输出到游戏的 `UserData/IronNestFCS/`），切回游戏按 **F9** 即可加载新逻辑，无需重启游戏。
