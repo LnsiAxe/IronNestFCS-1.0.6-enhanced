@@ -2,6 +2,7 @@
 using MelonLoader;
 using UnityEngine;
 using System.Collections;
+using System.Linq;
 using static System.Enum;
 
 namespace IronNestFCS.Logic.FCS;
@@ -9,12 +10,10 @@ namespace IronNestFCS.Logic.FCS;
 public class PurchaseDeck {
     private Transform? _powderCard;
     private Dictionary<BulletType, Transform> bulletCards = new();
-    private LookAtTarget? _buyButton;
-    
+    private DialInteractable? _purchaseLever; // 采购拉杆(RequisitionSlot -> Locking Lever -> Lever)
     
     public bool TryBind() {
         var requisitionConsole = GameObject.Find("Requisition Console").transform;
-        DumpConsoleTree(requisitionConsole, 0); // 临时诊断:定位"拉杆"控件
         var cards = requisitionConsole.GetComponentsInChildren<PunchcardRuntime>();
         foreach (var card in cards) {
             if (TryParse(
@@ -27,34 +26,28 @@ public class PurchaseDeck {
                 _powderCard = card.transform;
             }
         }
-        _buyButton = requisitionConsole.FindChild("Universal Button").GetComponent<LookAtTarget>();
-        
+        // 采购执行控件:拉杆(游戏 8/14 更新后采购台改为"拖卡入槽 + 拉下拉杆",不再是 Universal Button 点击)。
+        // 拉杆是 RequisitionSlot 下名为 Lever 的 DialInteractable。
+        _purchaseLever = requisitionConsole.GetComponentsInChildren<DialInteractable>(true)
+            .FirstOrDefault(d => d != null && d.gameObject != null && d.gameObject.name == "Lever");
+        if (_purchaseLever == null) {
+            MelonLogger.Error("[FCS] PurchaseDeck: Can't find purchase lever (DialInteractable)");
+            return false;
+        }
         return true;
-    }
-
-    // ===== 临时诊断:打印采购台对象树与 HandleInteractable 方法,定位新版"拉杆"采购 =====
-    private static void DumpConsoleTree(Transform root, int depth) {
-        if (root == null || depth > 5) return;
-        try {
-            string comps = string.Join(",", root.GetComponents<Component>().Select(c => c != null ? c.GetType().Name : "?"));
-            MelonLogger.Msg($"[FCS][Dump] {new string(' ', depth * 2)}{root.name}  <{comps}>");
-            foreach (var c in root.GetComponents<Component>()) {
-                if (c == null || c.GetType().Name != "HandleInteractable") continue;
-                MelonLogger.Msg($"[FCS][Dump] >> HandleInteractable 在 {root.name}:");
-                foreach (var m in c.GetType().GetMethods(
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
-                    MelonLogger.Msg($"[FCS][Dump]    Method: {m.Name}");
-                foreach (var p in c.GetType().GetProperties(
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
-                    MelonLogger.Msg($"[FCS][Dump]    Prop: {p.Name}");
-            }
-        } catch (Exception ex) { MelonLogger.Error($"[FCS][Dump] err: {ex.Message}"); }
-        for (int i = 0; i < root.childCount; i++) DumpConsoleTree(root.GetChild(i), depth + 1);
     }
     
     private DialInteractable GetLeftRightDial() {
         var consoleBox = GameObject.Find("Console Box").transform;
         return  consoleBox.GetComponentInChildren<DialInteractable>();
+    }
+
+    /// <summary>拉下拉杆执行一次采购(拉下=1,复位=0;新卡入槽会自动顶替旧卡)。</summary>
+    private IEnumerator PullLever() {
+        _purchaseLever!.SetDialValue(1);
+        yield return new WaitForSeconds(0.6f);
+        _purchaseLever.SetDialValue(0);
+        yield return new WaitForSeconds(0.4f);
     }
 
     public IEnumerator BuyShell(BulletType type, LeftRight leftRight) {
@@ -76,7 +69,7 @@ public class PurchaseDeck {
                 GetLeftRightDial().SetDialValue(1);
                 break;
         }
-        yield return FcsSceneInteractor.WaitAndClick(_buyButton);
+        yield return PullLever();
         yield return new WaitForSeconds(2f);
     }
 
@@ -88,9 +81,8 @@ public class PurchaseDeck {
         _powderCard.position = new Vector3(6.4814f, -2.4675f, -22.0968f);
         _powderCard.GetComponent<DraggableItem>().MoveToSlot();
         // 药包为两炮共享,不需要拨盘选择炮管;新卡拖入槽位会自动顶替旧卡。
-        // 与 BuyShell 一致：等卡牌入槽稳定后再执行采购,避免操作早于入槽导致本次采购无效。
         yield return new WaitForSeconds(0.5f);
-        yield return FcsSceneInteractor.WaitAndClick(_buyButton);
+        yield return PullLever();
         yield return new WaitForSeconds(2f);
     }
     
