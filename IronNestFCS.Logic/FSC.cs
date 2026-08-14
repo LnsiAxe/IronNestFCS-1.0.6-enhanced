@@ -97,7 +97,39 @@ public class FSC
                   && TriggerConsole.TryBind();
         MelonLogger.Msg("[FCS] Initialize: " + (IsBound ? "success" : "failed"));
         _runningCoroutines.Add((MelonCoroutines.Start(ProgressTimeoutMonitor()), LeftRight.Left)); // 监控用左槽位无关
+        if (IsBound) {
+            // 常驻药包自动补充协程：两炮共享装药池,低于阈值自动补购,
+            // 避免任务流程里"买弹+买药包"争抢采购台(与原版 svr2kos2 修复一致)。
+            _runningCoroutines.Add((MelonCoroutines.Start(ReplenishPowderLoop()), LeftRight.Left));
+        }
         return IsBound;
+    }
+
+    // ===== 药包自动补充(移植自 svr2kos2 上游修复)=====
+    // 两炮共用一个装药余量池：余量低于 PowderReplenishThreshold 时,每 PowderCheckInterval 秒
+    // 自动购买一次装药卡,把药包维持在充足水位,避免任务流程因装药不足卡在装填/击发阶段。
+    private const float PowderCheckInterval = 5f;
+    private const int PowderReplenishThreshold = 6;
+
+    /// <summary>
+    /// 常驻后台协程：周期性检测装药余量(两炮共用池),低于阈值时自动购买一次装药卡。
+    /// 购买必须持 _deskLock——采购台是共享硬件,与任务流程的采购互斥(阻塞等待,不破坏临界区)。
+    /// 迭代器被 Stop 时 Dispose 会执行 finally,锁不会泄漏。
+    /// </summary>
+    private IEnumerator ReplenishPowderLoop() {
+        while (true) {
+            yield return new WaitForSeconds(PowderCheckInterval);
+            var charges = Math.Min(LeftGun.RemainingCharges(), RightGun.RemainingCharges());
+            if (charges >= PowderReplenishThreshold) continue;
+            MelonLogger.Msg($"[FCS] AutoReplenish: powder charges {charges} < {PowderReplenishThreshold}, buying one");
+            yield return _deskLock.Acquire();
+            try {
+                yield return _purchaseDeck.BuyPowders();
+            }
+            finally {
+                _deskLock.Release();
+            }
+        }
     }
 
     public void Update() {
@@ -331,7 +363,7 @@ public class FSC
             // 加购买次数上限兜底：采购始终无效时不至于无限循环（每次约 2.5s）。
             var powderPurchaseAttempts = 0;
             while (gunSys.RemainingCharges() < powderCount) {
-                yield return _purchaseDeck.BuyPowders(leftRight);
+                yield return _purchaseDeck.BuyPowders();
                 if (++powderPurchaseAttempts >= 10) {
                     MelonLogger.Error(
                         $"[FCS] {leftRight} 炮管：购买装药 {powderPurchaseAttempts} 次后仍不足 " +
